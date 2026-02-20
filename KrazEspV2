@@ -1,0 +1,269 @@
+--[[
+    KrazEsp V2 - PREMIUM MONITOR EDITION (INSTRUCTIONS ADDED)
+    Ativação: [ X ] | Cor: [ P ]
+]]
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local Stats = game:GetService("Stats")
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- FUNÇÃO CONVIDAR DISCORD
+local function DiscordInvite()
+    local inviteCode = "hkRYADZM5z"
+    local http = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+    if http then
+        http({
+            Url = "http://127.0.0.1:6463/rpc?v=1",
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json", ["Origin"] = "https://discord.com"},
+            Body = HttpService:JSONEncode({cmd = "INVITE_BROWSER", args = {code = inviteCode}, nonce = HttpService:GenerateGUID(false)}),
+        })
+    end
+end
+DiscordInvite()
+
+local LocalPlayer = Players.LocalPlayer
+local startTime = os.time()
+
+local settings = {
+    enabled = false,
+    espColor = Color3.fromRGB(160, 32, 240),
+    colors = {
+        Color3.fromRGB(160, 32, 240), -- Roxo
+        Color3.fromRGB(255, 48, 48),  -- Vermelho
+        Color3.fromRGB(0, 255, 120),  -- Verde
+        Color3.fromRGB(0, 160, 255),  -- Azul
+        Color3.fromRGB(255, 200, 0)   -- Dourado
+    },
+    colorIndex = 1
+}
+
+-- Interface Principal
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "KrazEsp_V2_Final"
+screenGui.Parent = CoreGui
+screenGui.ResetOnSpawn = false
+
+-- BOTÃO MINIMIZAR (K)
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0, 55, 0, 55)
+minBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
+minBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+minBtn.Text = "K"
+minBtn.TextColor3 = settings.espColor
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = 26
+minBtn.Parent = screenGui
+minBtn.AutoButtonColor = false
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 12)
+local btnStroke = Instance.new("UIStroke", minBtn)
+btnStroke.Color = settings.espColor
+btnStroke.Thickness = 2.5
+
+local btnGlow = Instance.new("ImageLabel")
+btnGlow.BackgroundTransparency = 1
+btnGlow.Position = UDim2.new(0, -10, 0, -10)
+btnGlow.Size = UDim2.new(1, 20, 1, 20)
+btnGlow.Image = "rbxassetid://4996891919"
+btnGlow.ImageColor3 = settings.espColor
+btnGlow.ImageTransparency = 0.6
+btnGlow.Parent = minBtn
+
+-- Painel Principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 240, 0, 330) -- Aumentado para as instruções
+mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
+local mainStroke = Instance.new("UIStroke", mainFrame)
+mainStroke.Color = settings.espColor
+mainStroke.Thickness = 2
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundTransparency = 1
+title.Text = "KrazEsp V2"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.Parent = mainFrame
+
+-- LABELS DE INFO
+local function createLabel(pos, align)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(0.5, -15, 0, 20); l.Position = pos; l.BackgroundTransparency = 1
+    l.TextColor3 = Color3.fromRGB(200, 200, 200); l.Font = Enum.Font.GothamSemibold; l.TextSize = 10
+    l.TextXAlignment = align; l.Parent = mainFrame
+    return l
+end
+local userLabel = createLabel(UDim2.new(0, 15, 0, 45), Enum.TextXAlignment.Left)
+userLabel.Text = "USER: " .. LocalPlayer.Name
+local timeLabel = createLabel(UDim2.new(0.5, 0, 0, 45), Enum.TextXAlignment.Right)
+local fpsLabel = createLabel(UDim2.new(0, 15, 0, 60), Enum.TextXAlignment.Left)
+local pingLabel = createLabel(UDim2.new(0.5, 0, 0, 60), Enum.TextXAlignment.Right)
+
+-- BOTÕES
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 200, 0, 48); toggleBtn.Position = UDim2.new(0.5, -100, 0, 95)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Font = Enum.Font.GothamBold; toggleBtn.TextSize = 14; toggleBtn.Parent = mainFrame
+Instance.new("UICorner", toggleBtn)
+
+local colorBtn = Instance.new("TextButton")
+colorBtn.Size = UDim2.new(0, 200, 0, 48); colorBtn.Position = UDim2.new(0.5, -100, 0, 150)
+colorBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); colorBtn.Text = "MUDAR COR"
+colorBtn.TextColor3 = Color3.fromRGB(255, 255, 255); colorBtn.Font = Enum.Font.GothamBold
+colorBtn.TextSize = 14; colorBtn.Parent = mainFrame
+Instance.new("UICorner", colorBtn)
+
+-- SEÇÃO DE INSTRUÇÕES (NOVO)
+local line = Instance.new("Frame")
+line.Size = UDim2.new(0.8, 0, 0, 1)
+line.Position = UDim2.new(0.1, 0, 0, 215)
+line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+line.BorderSizePixel = 0
+line.Parent = mainFrame
+
+local instrTitle = Instance.new("TextLabel")
+instrTitle.Size = UDim2.new(1, 0, 0, 30)
+instrTitle.Position = UDim2.new(0, 0, 0, 220)
+instrTitle.BackgroundTransparency = 1
+instrTitle.Text = "ATALHOS DO TECLADO"
+instrTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+instrTitle.Font = Enum.Font.GothamBold
+instrTitle.TextSize = 10
+instrTitle.Parent = mainFrame
+
+local instrBody = Instance.new("TextLabel")
+instrBody.Size = UDim2.new(1, 0, 0, 50)
+instrBody.Position = UDim2.new(0, 0, 0, 250)
+instrBody.BackgroundTransparency = 1
+instrBody.Text = "[ X ] ATIVAR / DESATIVAR ESP\n[ P ] ALTERNAR CORES DO MENU"
+instrBody.TextColor3 = Color3.fromRGB(200, 200, 200)
+instrBody.Font = Enum.Font.GothamSemibold
+instrBody.TextSize = 11
+instrBody.LineHeight = 1.4
+instrBody.Parent = mainFrame
+
+-----------------------------------------------------------
+-- LOGICA E CORREÇÕES
+-----------------------------------------------------------
+local function updateUI()
+    local color = settings.espColor
+    toggleBtn.Text = settings.enabled and "ESP: ATIVO" or "ESP: INATIVO"
+    toggleBtn.BackgroundColor3 = settings.enabled and Color3.fromRGB(45, 120, 45) or Color3.fromRGB(120, 45, 45)
+    
+    TweenService:Create(mainStroke, TweenInfo.new(0.3), {Color = color}):Play()
+    TweenService:Create(minBtn, TweenInfo.new(0.3), {TextColor3 = color}):Play()
+    TweenService:Create(btnStroke, TweenInfo.new(0.3), {Color = color}):Play()
+    btnGlow.ImageColor3 = color
+    userLabel.TextColor3 = color
+    timeLabel.TextColor3 = color
+end
+
+local function toggle()
+    settings.enabled = not settings.enabled
+    updateUI()
+    minBtn:TweenSize(UDim2.new(0, 50, 0, 50), "Out", "Quad", 0.1, true, function()
+        minBtn:TweenSize(UDim2.new(0, 55, 0, 55), "Out", "Quad", 0.1)
+    end)
+end
+
+local function changeColor()
+    settings.colorIndex = (settings.colorIndex % #settings.colors) + 1
+    settings.espColor = settings.colors[settings.colorIndex]
+    updateUI()
+end
+
+UserInputService.InputBegan:Connect(function(i, p)
+    if p then return end
+    if i.KeyCode == Enum.KeyCode.X then toggle()
+    elseif i.KeyCode == Enum.KeyCode.P then changeColor() end
+end)
+
+toggleBtn.MouseButton1Click:Connect(toggle)
+colorBtn.MouseButton1Click:Connect(changeColor)
+minBtn.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+
+-- Monitoramento (FPS/PING/TIME)
+local lastUpdate = tick(); local frameCount = 0
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    if tick() - lastUpdate >= 1 then
+        fpsLabel.Text = "FPS: " .. frameCount
+        pingLabel.Text = "PING: " .. math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) .. "ms"
+        local s = os.time() - startTime
+        timeLabel.Text = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+        frameCount = 0; lastUpdate = tick()
+    end
+end)
+
+-----------------------------------------------------------
+-- ESP RENDER
+-----------------------------------------------------------
+local allTracers = {}
+local function setup(p)
+    if p == Players.LocalPlayer then return end
+    local l = Drawing.new("Line"); l.Thickness = 1.5; allTracers[p] = l
+end
+
+RunService.RenderStepped:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player == Players.LocalPlayer then continue end
+        local char = player.Character
+        local tracer = allTracers[player]
+        
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local hl = char:FindFirstChild("KrazHighlight")
+            
+            if settings.enabled then
+                if not hl then
+                    hl = Instance.new("Highlight", char)
+                    hl.Name = "KrazHighlight"
+                end
+                hl.Enabled = true
+                hl.OutlineColor = settings.espColor
+                hl.FillTransparency = 1
+                
+                local screenPos, onScreen = Camera:WorldToViewportPoint(char.HumanoidRootPart.Position)
+                if onScreen and tracer then
+                    tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                    tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+                    tracer.Color = settings.espColor
+                    tracer.Visible = true
+                elseif tracer then tracer.Visible = false end
+            else
+                if hl then hl.Enabled = false end
+                if tracer then tracer.Visible = false end
+            end
+        end
+    end
+end)
+
+-- Drag System
+local function drag(obj)
+    local dragging, dragStart, startPos
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true; dragStart = input.Position; startPos = obj.Position
+        end
+    end)
+    obj.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    obj.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+end
+drag(mainFrame); drag(minBtn)
+
+for _, p in pairs(Players:GetPlayers()) do setup(p) end
+Players.PlayerAdded:Connect(setup)
+updateUI()
